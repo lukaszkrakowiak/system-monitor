@@ -10,6 +10,7 @@ import (
 
 	"server-monitor/internal/collector"
 	"server-monitor/internal/scheduler"
+	"server-monitor/internal/secret"
 	"server-monitor/internal/storage"
 )
 
@@ -35,6 +36,7 @@ type config struct {
 	SupervisorSocket        string // pusty = sonda wyłączona
 	AuditLog                string // pusty = śledzenie wyłączone
 	RefreshInterval         time.Duration
+	SecretKey               string // SM_SECRET_KEY: klucz szyfrowania haseł konektorów (pusty = zapis haseł wyłączony)
 }
 
 func orDefault(v, d string) string {
@@ -72,6 +74,10 @@ func loadConfig(getenv func(string) string) (config, error) {
 		KibanaAuth: collector.HTTPAuth{Username: getenv("KIBANA_USER"), Password: getenv("KIBANA_PASSWORD"),
 			APIKey: getenv("KIBANA_API_KEY")},
 		RefreshInterval: scheduler.DefaultInterval,
+		SecretKey:       getenv("SM_SECRET_KEY"),
+	}
+	if c.SecretKey != "" && len(c.SecretKey) < secret.MinKeyLen {
+		return c, fmt.Errorf("SM_SECRET_KEY must have at least %d characters (e.g. openssl rand -base64 32)", secret.MinKeyLen)
 	}
 	switch strings.ToLower(getenv("HEALTH_PUBLIC")) {
 	case "", "0", "false":

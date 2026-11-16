@@ -221,7 +221,8 @@ Uwierzytelnianie: Authorization: Bearer <SM_API_TOKEN> lub Basic (SM_BASIC_USER/
 
 SM_DB_PATH, SM_LISTEN, HEALTH_PUBLIC, SM_API_TOKEN (min. 16 znaków), SM_BASIC_USER, SM_BASIC_PASSWORD, ES_URL, ES_USER, ES_PASSWORD, ES_API_KEY,
 KIBANA_URL, KIBANA_USER, KIBANA_PASSWORD, KIBANA_API_KEY, REDIS_ADDR, REDIS_NETWORK (tcp|unix), REDIS_PASSWORD, SUPERVISOR_SOCKET ("off" wyłącza),
-SM_AUDIT_LOG ("off" wyłącza), SM_REFRESH_INTERVAL (10s–15s). Szczegóły: deploy/systemd/server-monitor.env.example.
+SM_AUDIT_LOG ("off" wyłącza), SM_REFRESH_INTERVAL (10s–15s), SM_SECRET_KEY (min. 32 znaki; klucz szyfrowania haseł konektorów, sekcja 10).
+Szczegóły: deploy/systemd/server-monitor.env.example.
 
 8. Tabela audit_log_state (migracja 2)
 
@@ -243,3 +244,56 @@ GET /api/audit/login-failures?user=&ip=&limit=100&offset=0 (chronione) -> {"fail
 - user i ip to dokładne dopasowania (do 200 znaków); limit/offset jak w pozostałych endpointach audytu; najnowsze pierwsze.
 
 Widok: zakładka „Failed logins" na /audit (czas, próbowany użytkownik, IP, usługa; filtr po user i Remote IP). Alarmowanie (progi, status WARN/CRIT) — później.
+
+10. Alerty i konektory powiadomień (migracja 4)
+
+Architektura: demon `serve` uruchamia w tle silnik alertów (internal/alerts), który co ~5 s (a) bierze nowe sesje SSH z ssh_sessions (kursor
+w alert_state; pierwsze uruchomienie startuje od ostatniej sesji, historia nie generuje alertów), (b) porównuje stany z health_checks_cache,
+(c) zapisuje powiadomienia w kolejce notifications (outbox) i (d) dostarcza je konektorami z ponawianiem. `ingest-pam` i `GET /api/health`
+nie wysyłają niczego — silnik działa wyłącznie w demonie, a awaria SMTP nie wpływa na monitoring.
+
+Tabele (migracja 4):
+- notification_connectors(type PK, enabled, config_json, secret_enc, updated_at) — konfiguracja konektora bez sekretu + zaszyfrowany sekret.
+- alert_settings(id=1, settings_json, updated_at) — reguły (jeden dokument JSON, struktura jak w API).
+- alert_state(key PK, value, updated_at) — kursor sesji (`cursor:sessions`) i stany elementów (`svc:<klucz>`).
+- notifications(id, dedupe_key, connector, kind, subject, body, status pending|sent|failed, attempts, next_attempt_at, last_error, created_at, sent_at,
+  UNIQUE(dedupe_key, connector)) — jedna dostawa jednym konektorem; UNIQUE chroni przed duplikatami po restarcie.
+
+Sekrety: hasło konektora jest szyfrowane AES-256-GCM kluczem z SM_SECRET_KEY (nie z bazy) i nigdy nie jest zwracane przez API (tylko has_secret).
+Bez SM_SECRET_KEY zapis hasła jest odrzucany (400), a UI pokazuje ostrzeżenie. Konfiguracja SMTP bez hasła (np. lokalny relay) działa bez klucza.
+
+Reguły (alerts.Settings):
+{"timezone": "Europe/Warsaw"|"" (pusta = strefa serwera), "channels": ["email"],
+ "login_time": {"enabled", "windows": [{"days": ["mon".."sun"], "from": "HH:MM", "to": "HH:MM"}]},
+ "login_ip": {"enabled", "allowed": ["192.0.2.10", "10.0.0.0/8", "2001:db8::/32"]},
+ "service_state": {"enabled", "notify_recovery", "confirm_checks": 1..10}}
+- login_time: alert, gdy UDANE logowanie SSH wypada w którymkolwiek oknie. Okno dotyczy dni tygodnia wybranych według DNIA KALENDARZOWEGO chwili
+  logowania (w strefie z ustawień); from > to przechodzi przez północ (17:00–06:00 = 17:00–24:00 i 00:00–06:00 danego dnia), from == to = cały dzień.
+  Przykłady: „pon–pt 17:00–06:00" + „sob, niedz 00:00–00:00" (cały weekend).
+- login_ip: alert, gdy adres źródłowy nie należy do białej listy (adresy i CIDR, IPv4 zmapowany w IPv6 jest sprowadzany do IPv4). Logowania bez adresu
+  (konsola lokalna) są pomijane. Włączona reguła z pustą listą jest odrzucana (każde logowanie dawałoby alert). Jedno logowanie spełniające obie reguły
+  daje jedno powiadomienie z dwoma powodami.
+- service_state: alert, gdy element (usługa systemd, grupa supervisora, ES/Redis/Kibana, błąd samego kolektora) ma stan inny niż OK (WARN/DEGRADED/CRIT/DOWN).
+  Zmiana stanu jest potwierdzana po `confirm_checks` kolejnych RÓŻNYCH pomiarach (checked_at), więc pojedyncza nieudana sonda nie alarmuje, a ponowne
+  odczytanie tego samego wpisu cache nie liczy się dwa razy. Alert idzie raz na zmianę stanu (nie co pomiar); opcjonalnie także o powrocie do OK.
+  Stan jest śledzony także przy wyłączonej regule, więc jej włączenie nie wywołuje „starych" alertów. Elementy, które zniknęły (np. usunięta z obserwowanych
+  usługa), są zapominane bez powiadomienia.
+- Zdarzenie jest kolejkowane dla każdego kanału z `channels`, który ma włączony i skonfigurowany konektor; bez kanału zdarzenie nie jest nigdzie wysyłane.
+
+Dostarczanie: do 5 prób, odstępy między kolejnymi próbami 30 s, 2 min, 10 min i 30 min; po piątej nieudanej status = failed. Błąd ostatniej próby jest widoczny w historii.
+Konektor e-mail: net/smtp (STARTTLS, TLS lub brak szyfrowania; AUTH PLAIN tylko przez TLS albo z pętli zwrotnej), UTF-8, temat RFC 2047, znaki nowej linii
+w polach są odrzucane (ochrona przed wstrzykiwaniem nagłówków), limit 30 s na wysyłkę. Nowe konektory (Slack, Teams) dodaje się przez rejestr
+w internal/notify (Type{Name, Validate, New}) bez zmian w silniku.
+
+API (chronione; zapisy wymagają Content-Type: application/json, inaczej 415):
+GET  /api/settings/alerts -> alerts.Settings (domyślne, gdy brak zapisanych)
+PUT  /api/settings/alerts  body alerts.Settings -> 200 zapisane (znormalizowane) | 400 z opisem błędu
+GET  /api/settings/connectors -> {"connectors": [{"type","label","configured","enabled","has_secret","config":{...}}], "secret_storage": bool}
+PUT  /api/settings/connectors/{type} body {"enabled", "config": {...}, "password": null|""|"tekst"} (null = zostaw hasło, "" = usuń) -> 200 {connector} | 400 | 404
+POST /api/settings/connectors/{type}/test body {} -> 200 {"ok": bool, "error": ""} (wiadomość próbna zapisanym konektorem; błąd wysyłki jest w ciele, nie jako 5xx)
+GET  /api/alerts/history?limit=50&offset=0 -> {"notifications": [{"id","kind","connector","subject","body","status","attempts","last_error","created_at","sent_at"|null}], "limit","offset"}
+Config konektora email: {"host","port","security": "starttls"|"tls"|"none","username","from","to": [adresy]}.
+Endpointy zwracają 503, gdy alerty nie są skonfigurowane w tym procesie.
+
+Widok: /settings — zakładki „Alert rules" (kanały, strefa, okna czasowe z presetami, biała lista IP, stany usług), „Connectors" (formularz SMTP, wysyłka próbna)
+i „History" (kolejka i wynik dostarczania).

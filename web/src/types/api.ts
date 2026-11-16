@@ -132,6 +132,89 @@ export type LoginFailuresResponse = {
   offset: number;
 };
 
+export type AlertWindow = {
+  days: string[];
+  from: string;
+  to: string;
+};
+
+export type LoginTimeRule = {
+  enabled: boolean;
+  windows: AlertWindow[];
+};
+
+export type LoginIPRule = {
+  enabled: boolean;
+  allowed: string[];
+};
+
+export type ServiceStateRule = {
+  enabled: boolean;
+  notify_recovery: boolean;
+  confirm_checks: number;
+};
+
+export type AlertSettings = {
+  timezone: string;
+  channels: string[];
+  login_time: LoginTimeRule;
+  login_ip: LoginIPRule;
+  service_state: ServiceStateRule;
+};
+
+export type EmailConfig = {
+  host: string;
+  port: number;
+  security: string;
+  username: string;
+  from: string;
+  to: string[];
+};
+
+export type ConnectorInfo = {
+  type: string;
+  label: string;
+  configured: boolean;
+  enabled: boolean;
+  has_secret: boolean;
+  config: Record<string, unknown>;
+};
+
+export type ConnectorsResponse = {
+  connectors: ConnectorInfo[];
+  secret_storage: boolean;
+};
+
+export type ConnectorUpdateRequest = {
+  enabled: boolean;
+  config: Record<string, unknown>;
+  password: string | null;
+};
+
+export type TestConnectorResponse = {
+  ok: boolean;
+  error: string;
+};
+
+export type NotificationInfo = {
+  id: number;
+  kind: string;
+  connector: string;
+  subject: string;
+  body: string;
+  status: string;
+  attempts: number;
+  last_error: string;
+  created_at: string;
+  sent_at: string | null;
+};
+
+export type NotificationsResponse = {
+  notifications: NotificationInfo[];
+  limit: number;
+  offset: number;
+};
+
 export type ErrorResponse = {
   error: string;
 };

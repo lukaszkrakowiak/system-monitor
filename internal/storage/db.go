@@ -91,5 +91,17 @@ func (d *DB) Commands() *CommandRepo { return &CommandRepo{d} }
 // LoginFailures zwraca repozytorium login_failures.
 func (d *DB) LoginFailures() *LoginFailureRepo { return &LoginFailureRepo{d} }
 
+// Connectors zwraca repozytorium notification_connectors.
+func (d *DB) Connectors() *ConnectorRepo { return &ConnectorRepo{d} }
+
+// AlertSettings zwraca repozytorium alert_settings.
+func (d *DB) AlertSettings() *AlertSettingsRepo { return &AlertSettingsRepo{d} }
+
+// AlertState zwraca repozytorium alert_state.
+func (d *DB) AlertState() *AlertStateRepo { return &AlertStateRepo{d} }
+
+// Notifications zwraca repozytorium notifications (outbox).
+func (d *DB) Notifications() *NotificationRepo { return &NotificationRepo{d} }
+
 // AuditState zwraca repozytorium stanu śledzenia audit.log.
 func (d *DB) AuditState() *AuditStateRepo { return &AuditStateRepo{d} }

@@ -8,11 +8,13 @@ import {neutralTheme} from '@astryxdesign/theme-neutral/built';
 import {HealthPage} from './pages/HealthPage';
 import {ServicesPage} from './pages/ServicesPage';
 import {AuditPage} from './pages/AuditPage';
+import {SettingsPage} from './pages/SettingsPage';
 
 const NAV = [
   {path: '/health', label: 'Health'},
   {path: '/services', label: 'Services'},
   {path: '/audit', label: 'Audit'},
+  {path: '/settings', label: 'Settings'},
 ] as const;
 
 function Shell({children}: {children: React.ReactNode}) {
@@ -47,6 +49,7 @@ export function App() {
           <Route path="/health" element={<HealthPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/audit" element={<AuditPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/health" replace />} />
         </Routes>
       </Shell>

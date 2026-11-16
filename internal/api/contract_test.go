@@ -7,7 +7,9 @@ import (
 	"strings"
 	"testing"
 
+	"server-monitor/internal/alerts"
 	"server-monitor/internal/collector"
+	"server-monitor/internal/notify"
 	"server-monitor/internal/parser"
 )
 
@@ -79,6 +81,18 @@ func TestTypeScriptContractMatchesGoDTOs(t *testing.T) {
 		{reflect.TypeOf(CommandsResponse{}), "CommandsResponse"},
 		{reflect.TypeOf(LoginFailureDTO{}), "LoginFailureInfo"},
 		{reflect.TypeOf(LoginFailuresResponse{}), "LoginFailuresResponse"},
+		{reflect.TypeOf(alerts.Settings{}), "AlertSettings"},
+		{reflect.TypeOf(alerts.LoginTimeRule{}), "LoginTimeRule"},
+		{reflect.TypeOf(alerts.Window{}), "AlertWindow"},
+		{reflect.TypeOf(alerts.LoginIPRule{}), "LoginIPRule"},
+		{reflect.TypeOf(alerts.ServiceStateRule{}), "ServiceStateRule"},
+		{reflect.TypeOf(notify.EmailConfig{}), "EmailConfig"},
+		{reflect.TypeOf(ConnectorDTO{}), "ConnectorInfo"},
+		{reflect.TypeOf(ConnectorsResponse{}), "ConnectorsResponse"},
+		{reflect.TypeOf(ConnectorUpdateRequest{}), "ConnectorUpdateRequest"},
+		{reflect.TypeOf(TestConnectorResponse{}), "TestConnectorResponse"},
+		{reflect.TypeOf(NotificationDTO{}), "NotificationInfo"},
+		{reflect.TypeOf(NotificationsResponse{}), "NotificationsResponse"},
 		{reflect.TypeOf(ErrorResponse{}), "ErrorResponse"},
 	}
 	covered := map[string]bool{}

@@ -75,6 +75,49 @@ func (r *SessionRepo) List(user string, limit, offset int) ([]SSHSession, error)
 	return out, rows.Err()
 }
 
+// MaxID zwraca największe id sesji (0 gdy brak) — start kursora silnika alertów.
+func (r *SessionRepo) MaxID() (int64, error) {
+	var id sql.NullInt64
+	if err := r.db.read.QueryRow(`SELECT MAX(id) FROM ssh_sessions`).Scan(&id); err != nil {
+		return 0, err
+	}
+	return id.Int64, nil
+}
+
+// After zwraca sesje o id > afterID rosnąco (dla silnika alertów: każda sesja dokładnie raz).
+func (r *SessionRepo) After(afterID int64, limit int) ([]SSHSession, error) {
+	if limit <= 0 || limit > 1000 {
+		limit = 100
+	}
+	rows, err := r.db.read.Query(`SELECT id, username, remote_ip, tty, pam_service, login_at, logout_at
+		FROM ssh_sessions WHERE id > ? ORDER BY id ASC LIMIT ?`, afterID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []SSHSession
+	for rows.Next() {
+		var s SSHSession
+		var login string
+		var logout sql.NullString
+		if err := rows.Scan(&s.ID, &s.Username, &s.RemoteIP, &s.TTY, &s.PAMService, &login, &logout); err != nil {
+			return nil, err
+		}
+		if s.LoginAt, err = parseTime(login); err != nil {
+			return nil, err
+		}
+		if logout.Valid {
+			t, err := parseTime(logout.String)
+			if err != nil {
+				return nil, err
+			}
+			s.LogoutAt = &t
+		}
+		out = append(out, s)
+	}
+	return out, rows.Err()
+}
+
 func clampPage(limit, offset int) (int, int) {
 	if limit <= 0 || limit > 1000 {
 		limit = 100

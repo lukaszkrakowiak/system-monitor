@@ -14,9 +14,13 @@ import (
 	"syscall"
 	"time"
 
+	_ "time/tzdata" // strefy czasowe w statycznej binarce (reguły alertów mają własną strefę)
+
+	"server-monitor/internal/alerts"
 	"server-monitor/internal/api"
 	"server-monitor/internal/collector"
 	"server-monitor/internal/scheduler"
+	"server-monitor/internal/secret"
 	"server-monitor/internal/storage"
 )
 
@@ -118,9 +122,25 @@ func serve(ctx context.Context, cfg config) error {
 		go tail.Run(ctx)
 	}
 
+	var box *secret.Box
+	if cfg.SecretKey != "" {
+		if box, err = secret.New(cfg.SecretKey); err != nil {
+			return err
+		}
+	} else {
+		log.Printf("SM_SECRET_KEY is not set: connector passwords cannot be stored (alerts via authenticated SMTP are unavailable)")
+	}
+	engine := &alerts.Engine{
+		Sessions: db.Sessions(), Health: db.Health(), Settings: db.AlertSettings(), State: db.AlertState(),
+		Outbox: db.Notifications(), Connectors: db.Connectors(), Secrets: box,
+	}
+	go engine.Run(ctx)
+
 	handler := api.New(api.Config{
 		Health: db.Health(), Services: db.Services(), Sessions: db.Sessions(), Commands: db.Commands(), LoginFailures: db.LoginFailures(), Units: sysd,
-		Token: cfg.Token, BasicUser: cfg.BasicUser, BasicPass: cfg.BasicPass,
+		Connectors: db.Connectors(), AlertSettings: db.AlertSettings(), Notifications: db.Notifications(), Secrets: box,
+		TestConnector: engine.SendTest,
+		Token:         cfg.Token, BasicUser: cfg.BasicUser, BasicPass: cfg.BasicPass,
 		HealthPublic: cfg.HealthPublic,
 		OnSelectionChanged: func() {
 			rctx, cancel := context.WithTimeout(ctx, 10*time.Second)

@@ -72,6 +72,43 @@ CREATE TABLE IF NOT EXISTS login_failures (
 CREATE INDEX IF NOT EXISTS idx_login_failures_time ON login_failures(attempted_at DESC);
 CREATE INDEX IF NOT EXISTS idx_login_failures_ip ON login_failures(remote_ip, attempted_at DESC);
 `},
+	// Alerty: konektory powiadomień, reguły, stan silnika i kolejka wysyłki (outbox).
+	{4, `
+CREATE TABLE IF NOT EXISTS notification_connectors (
+    type        TEXT PRIMARY KEY,
+    enabled     INTEGER NOT NULL DEFAULT 0,
+    config_json TEXT NOT NULL,
+    secret_enc  TEXT NOT NULL DEFAULT '',
+    updated_at  DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS alert_settings (
+    id            INTEGER PRIMARY KEY CHECK (id = 1),
+    settings_json TEXT NOT NULL,
+    updated_at    DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS alert_state (
+    key        TEXT PRIMARY KEY,
+    value      TEXT NOT NULL,
+    updated_at DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS notifications (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    dedupe_key      TEXT NOT NULL,
+    connector       TEXT NOT NULL,
+    kind            TEXT NOT NULL,
+    subject         TEXT NOT NULL,
+    body            TEXT NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed')),
+    attempts        INTEGER NOT NULL DEFAULT 0,
+    next_attempt_at DATETIME NOT NULL,
+    last_error      TEXT NOT NULL DEFAULT '',
+    created_at      DATETIME NOT NULL,
+    sent_at         DATETIME,
+    UNIQUE (dedupe_key, connector)
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_due ON notifications(status, next_attempt_at);
+CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at DESC);
+`},
 }
 
 func migrate(db *sql.DB) error {

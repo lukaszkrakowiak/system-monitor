@@ -8,6 +8,9 @@ React frontend embedded; no Node.js, web server or external database is needed i
 - **Health** (`/health`): selected systemd services, supervisor process groups, and Elasticsearch / Redis / Kibana status.
 - **Services** (`/services`): pick which systemd units appear on the health page.
 - **Audit** (`/audit`): shell command history (auditd), SSH sessions (PAM), and failed logins (auditd).
+- **Settings** (`/settings`): alert rules and notification connectors (email/SMTP today; the connector registry is built for Slack, Teams, etc.).
+  Rules: SSH logins in chosen time windows (e.g. Mon–Fri 17:00–06:00, or the whole weekend), SSH logins from IPs outside an allow-list, and
+  any monitored service leaving the OK state (with optional recovery notices). Delivery is queued with retries; the History tab shows every notification.
 
 ## Design
 
@@ -37,7 +40,8 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/server-m
 
 Templates live in [`deploy/`](deploy/) (systemd unit, env file, sysusers/tmpfiles, auditd rules, PAM entry, supervisord).
 Copy them to the target server by hand; see [`deploy/README.md`](deploy/README.md). Set `SM_API_TOKEN` (at least 16 characters)
-in the env file — the server refuses to start without credentials.
+in the env file — the server refuses to start without credentials. To store an SMTP password from the UI also set `SM_SECRET_KEY`
+(32+ characters, e.g. `openssl rand -base64 32`); passwords are kept in SQLite encrypted with AES-256-GCM and never returned by the API.
 
 Subcommands: `server-monitor serve`, `server-monitor ingest-pam` (called by PAM), `server-monitor check`.
 

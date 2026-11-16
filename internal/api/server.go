@@ -16,6 +16,7 @@ import (
 
 	"server-monitor/internal/collector"
 	"server-monitor/internal/parser"
+	"server-monitor/internal/secret"
 	"server-monitor/internal/storage"
 )
 
@@ -56,6 +57,13 @@ type Config struct {
 	LoginFailures LoginFailureStore
 	Units         UnitLister
 
+	// Alerty (opcjonalne; gdy nil, odpowiednie endpointy zwracają 503).
+	Connectors    ConnectorStore
+	AlertSettings AlertSettingsStore
+	Notifications NotificationStore
+	Secrets       *secret.Box                                 // szyfrowanie haseł konektorów; nil = zapis sekretów niemożliwy
+	TestConnector func(ctx context.Context, typ string) error // wiadomość próbna zapisanym konektorem
+
 	Token     string // Bearer token (opcjonalny)
 	BasicUser string // Basic Auth (opcjonalny)
 	BasicPass string
@@ -90,13 +98,14 @@ func New(cfg Config) http.Handler {
 	if !cfg.HealthPublic {
 		health = s.auth(health)
 	}
+	methods := map[string][]string{} // ścieżka -> dozwolone metody (kolejność rejestracji)
+	var paths []string
 	route := func(method, path string, h http.HandlerFunc) {
 		mux.HandleFunc(method+" "+path, h)
-		// inne metody na znanej ścieżce -> 405 (bardziej szczegółowy wzorzec z metodą wygrywa)
-		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Allow", method)
-			writeError(w, http.StatusMethodNotAllowed, "method not allowed")
-		})
+		if _, ok := methods[path]; !ok {
+			paths = append(paths, path)
+		}
+		methods[path] = append(methods[path], method)
 	}
 	route("GET", "/api/health", health)
 	route("GET", "/api/systemd/units", s.auth(s.handleUnits))
@@ -104,6 +113,20 @@ func New(cfg Config) http.Handler {
 	route("GET", "/api/audit/sessions", s.auth(s.handleSessions))
 	route("GET", "/api/audit/commands", s.auth(s.handleCommands))
 	route("GET", "/api/audit/login-failures", s.auth(s.handleLoginFailures))
+	route("GET", "/api/settings/alerts", s.auth(s.handleGetAlertSettings))
+	route("PUT", "/api/settings/alerts", s.auth(s.handlePutAlertSettings))
+	route("GET", "/api/settings/connectors", s.auth(s.handleListConnectors))
+	route("PUT", "/api/settings/connectors/{type}", s.auth(s.handlePutConnector))
+	route("POST", "/api/settings/connectors/{type}/test", s.auth(s.handleTestConnector))
+	route("GET", "/api/alerts/history", s.auth(s.handleAlertHistory))
+	// inne metody na znanej ścieżce -> 405 z nagłówkiem Allow (wzorzec z metodą jest bardziej szczegółowy i wygrywa)
+	for _, p := range paths {
+		allow := strings.Join(methods[p], ", ")
+		mux.HandleFunc(p, func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Allow", allow)
+			writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+		})
+	}
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "not found")
 	})

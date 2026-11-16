@@ -1,9 +1,15 @@
 import type {
+  AlertSettings,
   CommandsResponse,
+  ConnectorInfo,
+  ConnectorsResponse,
+  ConnectorUpdateRequest,
   HealthResponse,
   LoginFailuresResponse,
+  NotificationsResponse,
   SelectionRequest,
   SessionsResponse,
+  TestConnectorResponse,
   UnitsResponse,
 } from '../types/api';
 
@@ -83,3 +89,13 @@ export const getSessions = (p: Page) =>
 export const getCommands = (p: Page) => apiFetch<CommandsResponse>(`/api/audit/commands${query({...p, ip: undefined})}`);
 export const getLoginFailures = (p: Page) =>
   apiFetch<LoginFailuresResponse>(`/api/audit/login-failures${query({...p, q: undefined})}`);
+
+export const getAlertSettings = () => apiFetch<AlertSettings>('/api/settings/alerts');
+export const putAlertSettings = (s: AlertSettings) =>
+  apiFetch<AlertSettings>('/api/settings/alerts', {method: 'PUT', body: JSON.stringify(s)});
+export const getConnectors = () => apiFetch<ConnectorsResponse>('/api/settings/connectors');
+export const putConnector = (type: string, req: ConnectorUpdateRequest) =>
+  apiFetch<ConnectorInfo>(`/api/settings/connectors/${encodeURIComponent(type)}`, {method: 'PUT', body: JSON.stringify(req)});
+export const testConnector = (type: string) =>
+  apiFetch<TestConnectorResponse>(`/api/settings/connectors/${encodeURIComponent(type)}/test`, {method: 'POST', body: '{}'});
+export const getAlertHistory = (p: Page) => apiFetch<NotificationsResponse>(`/api/alerts/history${query({limit: p.limit, offset: p.offset})}`);
