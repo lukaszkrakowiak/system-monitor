@@ -1,0 +1,23 @@
+type=DAEMON_START msg=audit(1731661000.000:1): op=start ver=3.1.2 format=enriched kernel=6.8.0 auid=4294967295 pid=700 uid=0 ses=4294967295 res=success
+type=SYSCALL msg=audit(1731661200.123:4581): arch=c000003e syscall=59 success=yes exit=0 a0=55d0c8a0 a1=55d0c8b0 a2=55d0c8c0 a3=7ffd items=2 ppid=2201 pid=2310 auid=1000 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=pts0 ses=3 comm="ls" exe="/usr/bin/ls" subj=unconfined key="cli_audit"
+type=EXECVE msg=audit(1731661200.123:4581): argc=2 a0="ls" a1="-la"
+type=CWD msg=audit(1731661200.123:4581): cwd="/root"
+type=PATH msg=audit(1731661200.123:4581): item=0 name="/usr/bin/ls" inode=1234 dev=08:01 mode=0100755 ouid=0 ogid=0 rdev=00:00 nametype=NORMAL
+type=PROCTITLE msg=audit(1731661200.123:4581): proctitle=6C73002D6C61
+type=SYSCALL msg=audit(1731661260.500:4590): arch=c000003e syscall=59 success=yes exit=0 a0=1 a1=2 a2=3 a3=4 items=2 ppid=2201 pid=2320 auid=1000 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=pts0 ses=3 comm="bash" exe="/usr/bin/bash" key="cli_audit"
+type=EXECVE msg=audit(1731661260.500:4590): argc=3 a0="bash" a1="-c" a2=6563686F2068656C6C6F20776F726C64
+type=CWD msg=audit(1731661260.500:4590): cwd=2F686F6D652F616E6E612F6D7920646972
+type=PROCTITLE msg=audit(1731661260.500:4590): proctitle=62617368
+type=SYSCALL msg=audit(1731661300.001:4600): arch=c000003e syscall=59 success=yes exit=0 a0=1 a1=2 a2=3 a3=4 items=2 ppid=1 pid=2330 auid=1001 uid=1001 comm="cron" exe="/usr/sbin/cron" key="other_rule"
+type=EXECVE msg=audit(1731661300.001:4600): argc=1 a0="cron"
+type=CWD msg=audit(1731661300.001:4600): cwd="/"
+type=SYSCALL msg=audit(1731661400.000:4610): arch=c000003e syscall=59 success=no exit=-2 a0=1 a1=2 a2=3 a3=4 items=1 ppid=2201 pid=2340 auid=1001 uid=1001 comm="nope" exe="/tmp/nope" key="cli_audit"
+type=EXECVE msg=audit(1731661400.000:4610): argc=1 a0="/tmp/nope"
+type=CWD msg=audit(1731661400.000:4610): cwd="/tmp"
+type=EOE msg=audit(1731661400.000:4610):
+this is a garbage line
+type=SYSCALL msg=audit(1731661500.250:4620): arch=c000003e syscall=59 success=yes exit=0 items=2 ppid=1 pid=2350 auid=1000 uid=1000 comm="x" exe="/usr/bin/x" key="cli_audit"
+type=EXECVE msg=audit(1731661500.250:4620): argc=2 a0="x" a1[0]="aaaa" a1[1]="bbbb"
+type=CWD msg=audit(1731661500.250:4620): cwd="/home/anna"
+type=SYSCALL msg=audit(1731661600.000:4630): arch=c000003e syscall=59 success=yes exit=0 items=2 ppid=1 pid=2360 auid=1000 uid=1000 comm="py" exe="/usr/bin/python3" key="cli_audit"
+type=PROCTITLE msg=audit(1731661600.000:4630): proctitle=6C73002D6C61

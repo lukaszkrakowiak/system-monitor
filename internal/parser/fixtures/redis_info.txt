@@ -1,0 +1,14 @@
+# Server
+redis_version:7.2.4
+redis_mode:standalone
+uptime_in_seconds:864000
+uptime_in_days:10
+
+# Clients
+connected_clients:28
+blocked_clients:0
+
+# Memory
+used_memory:149422080
+used_memory_human:142.50M
+used_memory_peak_human:150.00M

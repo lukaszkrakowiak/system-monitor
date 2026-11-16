@@ -1,0 +1,27 @@
+Id=nginx.service
+MainPID=1234
+ExecMainStartTimestamp=Wed 2026-11-04 06:00:00 UTC
+ActiveState=active
+SubState=running
+MemoryCurrent=18432000
+
+Id=redis-server.service
+MainPID=987
+ExecMainStartTimestamp=Sun 2026-11-15 08:30:00 UTC
+ActiveState=active
+SubState=running
+MemoryCurrent=[not set]
+
+Id=php8.4-fpm.service
+MainPID=0
+ExecMainStartTimestamp=
+ActiveState=activating
+SubState=start
+MemoryCurrent=18446744073709551615
+
+Id=ghost.service
+MainPID=0
+ExecMainStartTimestamp=
+ActiveState=inactive
+SubState=dead
+MemoryCurrent=[not set]

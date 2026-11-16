@@ -1,0 +1,38 @@
+# /etc/systemd/system/server-monitor.service
+[Unit]
+Description=Server Monitor (single binary: API + probes + audit tail)
+After=network.target auditd.service
+Wants=auditd.service
+
+[Service]
+Type=simple
+User=monitor
+Group=monitor
+# adm: odczyt /var/log/audit/audit.log (patrz deploy/auditd/README: log_group = adm)
+SupplementaryGroups=adm
+EnvironmentFile=/etc/server-monitor/server-monitor.env
+ExecStart=/usr/local/bin/server-monitor serve
+Restart=on-failure
+RestartSec=3
+
+# Utwardzenie (bez root, bez sudo; systemctl list-units/show działa bez uprawnień)
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/server-monitor
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+UMask=0007
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,8 @@
+type=USER_LOGIN msg=audit(1763278614.806:455): pid=6262 uid=0 auid=4294967295 ses=4294967295 subj=unconfined msg='op=login acct="alice" exe="/usr/sbin/sshd" hostname=? addr=192.0.2.10 terminal=sshd res=failed'
+type=USER_AUTH msg=audit(1763278615.798:456): pid=6262 uid=0 auid=4294967295 ses=4294967295 subj=unconfined msg='op=PAM:authentication grantors=? acct="alice" exe="/usr/sbin/sshd" hostname=192.0.2.10 addr=192.0.2.10 terminal=ssh res=failed'
+type=USER_LOGIN msg=audit(1763278617.742:457): pid=6262 uid=0 auid=4294967295 ses=4294967295 subj=unconfined msg='op=login acct="admin" exe="/usr/sbin/sshd" hostname=? addr=203.0.113.7 terminal=sshd res=failed'
+type=USER_LOGIN msg=audit(1763278620.206:458): pid=6262 uid=0 auid=4294967295 ses=4294967295 subj=unconfined msg='op=login acct=7573657220312B32 exe="/usr/sbin/sshd" hostname=? addr=2001:db8::1 terminal=sshd res=failed'
+type=USER_LOGIN msg=audit(1763278625.100:459): pid=6300 uid=0 auid=4294967295 ses=4294967295 subj=unconfined msg='op=login acct=(unknown) exe="/usr/sbin/sshd" hostname=? addr=? terminal=sshd res=failed'
+type=USER_LOGIN msg=audit(1763278630.000:460): pid=6301 uid=0 auid=1000 ses=12 subj=unconfined msg='op=login id=1000 exe="/usr/sbin/sshd" hostname=? addr=192.0.2.10 terminal=/dev/pts/0 res=success'
+type=USER_AUTH msg=audit(1763278640.576:461): pid=6284 uid=1000 auid=1000 ses=11 subj=unconfined msg='op=PAM:authentication grantors=pam_permit,pam_cap acct="alice" exe="/usr/bin/sudo" hostname=? addr=? terminal=/dev/pts/0 res=success'
+type=USER_LOGIN msg=audit(1763278650.001:462): pid=6302 uid=0 auid=4294967295 ses=4294967295 subj=unconfined msg='op=login acct="old" exe="/usr/sbin/sshd" hostname=? addr=198.51.100.9 terminal=sshd res=0'

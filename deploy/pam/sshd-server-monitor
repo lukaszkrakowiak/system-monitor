@@ -1,0 +1,4 @@
+# Dopisz na końcu /etc/pam.d/sshd (sekcja session).
+# `optional` — awaria hooka nigdy nie blokuje logowania SSH.
+# Zmienne PAM_USER, PAM_RHOST, PAM_TTY, PAM_SERVICE, PAM_TYPE przekazuje pam_exec.
+session optional pam_exec.so seteuid /usr/local/bin/server-monitor ingest-pam

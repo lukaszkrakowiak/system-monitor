@@ -1,0 +1,66 @@
+<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><array><data>
+<value><struct>
+<member><name>description</name><value><string>pid 4101, uptime 1:02:03</string></value></member>
+<member><name>pid</name><value><int>4101</int></value></member>
+<member><name>stderr_logfile</name><value><string>/var/log/m0.err</string></value></member>
+<member><name>name</name><value><string>messenger_async_00</string></value></member>
+<member><name>group</name><value><string>messenger_async</string></value></member>
+<member><name>statename</name><value><string>RUNNING</string></value></member>
+<member><name>state</name><value><int>20</int></value></member>
+</struct></value>
+<value><struct>
+<member><name>description</name><value><string>pid 4102, uptime 1:02:03</string></value></member>
+<member><name>pid</name><value><int>4102</int></value></member>
+<member><name>name</name><value><string>messenger_async_01</string></value></member>
+<member><name>group</name><value><string>messenger_async</string></value></member>
+<member><name>statename</name><value><string>RUNNING</string></value></member>
+<member><name>state</name><value><int>20</int></value></member>
+</struct></value>
+<value><struct>
+<member><name>description</name><value><string>Exited too quickly</string></value></member>
+<member><name>pid</name><value><int>0</int></value></member>
+<member><name>name</name><value><string>mailer_00</string></value></member>
+<member><name>group</name><value><string>mailer</string></value></member>
+<member><name>statename</name><value><string>FATAL</string></value></member>
+<member><name>state</name><value><int>200</int></value></member>
+</struct></value>
+<value><struct>
+<member><name>description</name><value><string>pid 4200, uptime 0:10:00</string></value></member>
+<member><name>pid</name><value><int>4200</int></value></member>
+<member><name>name</name><value><string>mailer_01</string></value></member>
+<member><name>group</name><value><string>mailer</string></value></member>
+<member><name>statename</name><value><string>RUNNING</string></value></member>
+<member><name>state</name><value><int>20</int></value></member>
+</struct></value>
+<value><struct>
+<member><name>description</name><value><string>Not started</string></value></member>
+<member><name>pid</name><value><int>0</int></value></member>
+<member><name>name</name><value><string>cron-sync:cron-sync_00</string></value></member>
+<member><name>group</name><value><string>cron-sync</string></value></member>
+<member><name>statename</name><value><string>STOPPED</string></value></member>
+<member><name>state</name><value><int>0</int></value></member>
+</struct></value>
+<value><struct>
+<member><name>description</name><value><string>pid 4300, uptime 5 days</string></value></member>
+<member><name>pid</name><value><i4>4300</i4></value></member>
+<member><name>name</name><value><string>horizon</string></value></member>
+<member><name>group</name><value><string>horizon</string></value></member>
+<member><name>statename</name><value><string>RUNNING</string></value></member>
+<member><name>state</name><value><int>20</int></value></member>
+</struct></value>
+<value><struct>
+<member><name>description</name><value><string>pid 4400, uptime 5 days</string></value></member>
+<member><name>pid</name><value><int>4400</int></value></member>
+<member><name>name</name><value><string>reports_07</string></value></member>
+<member><name>group</name><value><string>reports_07</string></value></member>
+<member><name>statename</name><value><string>RUNNING</string></value></member>
+<member><name>state</name><value><int>20</int></value></member>
+</struct></value>
+</data></array></value>
+</param>
+</params>
+</methodResponse>

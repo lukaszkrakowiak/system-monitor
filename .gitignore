@@ -1,0 +1,9 @@
+node_modules/
+web/node_modules/
+web/dist/*
+!web/dist/.gitkeep
+/dist/
+coverage/
+
+# lokalne ustawienia Claude Code (uprawnienia konkretnej maszyny)
+.claude/settings.local.json

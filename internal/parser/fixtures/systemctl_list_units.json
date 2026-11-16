@@ -1,0 +1,8 @@
+[
+  {"unit":"nginx.service","load":"loaded","active":"active","sub":"running","description":"A high performance web server"},
+  {"unit":"redis-server.service","load":"loaded","active":"active","sub":"running","description":"Advanced key-value store"},
+  {"unit":"php8.4-fpm.service","load":"loaded","active":"activating","sub":"start","description":"The PHP 8.4 FastCGI Process Manager"},
+  {"unit":"cloud-init.service","load":"loaded","active":"inactive","sub":"dead","description":"Initial cloud-init job"},
+  {"unit":"broken.service","load":"loaded","active":"failed","sub":"failed","description":"Always failing"},
+  {"unit":"ghost.service","load":"not-found","active":"inactive","sub":"dead","description":"ghost.service"}
+]

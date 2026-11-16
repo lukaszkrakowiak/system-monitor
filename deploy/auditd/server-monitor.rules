@@ -1,0 +1,4 @@
+## /etc/audit/rules.d/server-monitor.rules
+## Historia komend CLI: execve zalogowanych użytkowników (auid >= 1000, bez "unset" 4294967295).
+-a always,exit -F arch=b64 -S execve -F auid>=1000 -F auid!=4294967295 -k cli_audit
+-a always,exit -F arch=b32 -S execve -F auid>=1000 -F auid!=4294967295 -k cli_audit

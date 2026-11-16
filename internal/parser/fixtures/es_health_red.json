@@ -1,0 +1,1 @@
+{"cluster_name":"prod-es","status":"red","timed_out":false,"number_of_nodes":2,"unassigned_shards":14,"active_shards_percent_as_number":83.5}

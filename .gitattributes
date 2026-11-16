@@ -1,0 +1,3 @@
+# Zawsze LF (pliki z deploy/ trafiają na Linuxa; CRLF psuje unity systemd, reguły auditd i wpisy PAM).
+* text=auto eol=lf
+*.bin binary
