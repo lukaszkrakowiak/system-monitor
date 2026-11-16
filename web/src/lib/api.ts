@@ -5,6 +5,9 @@ import type {
   ConnectorsResponse,
   ConnectorUpdateRequest,
   HealthResponse,
+  IPLabelInfo,
+  IPLabelRequest,
+  IPLabelsResponse,
   LoginFailuresResponse,
   NotificationsResponse,
   SelectionRequest,
@@ -54,6 +57,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   } catch {
     throw new ApiError(0, 'Cannot reach the server');
   }
+  if (res.ok && res.status === 204) return undefined as T;
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
     try {
@@ -90,7 +94,12 @@ export const getCommands = (p: Page) => apiFetch<CommandsResponse>(`/api/audit/c
 export const getLoginFailures = (p: Page) =>
   apiFetch<LoginFailuresResponse>(`/api/audit/login-failures${query({...p, q: undefined})}`);
 
-export const getAlertSettings = () => apiFetch<AlertSettings>('/api/settings/alerts');
+export const getIPLabels = () => apiFetch<IPLabelsResponse>('/api/ip-labels');
+export const putIPLabel = (ip: string, label: string) =>
+  apiFetch<IPLabelInfo>(`/api/ip-labels/${encodeURIComponent(ip)}`, {method: 'PUT', body: JSON.stringify({label} satisfies IPLabelRequest)});
+export const deleteIPLabel = (ip: string) => apiFetch<void>(`/api/ip-labels/${encodeURIComponent(ip)}`, {method: 'DELETE'});
+
+export const getAlertSettings =() => apiFetch<AlertSettings>('/api/settings/alerts');
 export const putAlertSettings = (s: AlertSettings) =>
   apiFetch<AlertSettings>('/api/settings/alerts', {method: 'PUT', body: JSON.stringify(s)});
 export const getConnectors = () => apiFetch<ConnectorsResponse>('/api/settings/connectors');

@@ -297,3 +297,19 @@ Endpointy zwracają 503, gdy alerty nie są skonfigurowane w tym procesie.
 
 Widok: /settings — zakładki „Alert rules" (kanały, strefa, okna czasowe z presetami, biała lista IP, stany usług), „Connectors" (formularz SMTP, wysyłka próbna)
 i „History" (kolejka i wynik dostarczania).
+
+11. Etykiety adresów IP (migracja 5)
+
+Tabela ip_labels(ip TEXT PRIMARY KEY, label TEXT NOT NULL, updated_at DATETIME NOT NULL): własna etykieta użytkownika dla adresu IP (np. „biuro", „mój komputer").
+Klucz jest kanoniczny (storage.NormalizeIP): IPv4 zmapowany w IPv6 sprowadzany do IPv4, IPv6 małymi literami, bez strefy; CIDR i nazwy hostów są odrzucane.
+Etykieta: po przycięciu 1–64 znaków (run), poprawny UTF-8, bez znaków sterujących (trafia m.in. do wiadomości e-mail). Maksymalnie 1000 etykiet.
+
+API (chronione; PUT wymaga Content-Type: application/json, inaczej 415):
+GET    /api/ip-labels -> {"labels": [{"ip","label"}]} (posortowane po ip; zawsze tablica)
+PUT    /api/ip-labels/{ip} body {"label"} -> 200 {"ip","label"} (ip w odpowiedzi jest kanoniczne) | 400
+DELETE /api/ip-labels/{ip} -> 204 (idempotentne, także gdy etykiety nie było) | 400 (niepoprawny IP)
+Adresy IPv6 w ścieżce kodujemy (np. 2001%3Adb8%3A%3A1). Endpointy zwracają 503, gdy repozytorium nie jest skonfigurowane.
+
+Etykieta jest dopisywana do pola „From IP" w powiadomieniach o logowaniu SSH („203.0.113.9 (biuro)"); błąd odczytu etykiet nigdy nie blokuje alertu.
+UI: zakładki „SSH sessions" i „Failed logins" w /audit pokazują etykietę przy adresie oraz przycisk „Add label"/„Edit label" (edycja w miejscu, „Remove label").
+Gdy etykiet nie da się pobrać, widoki działają i pokazują same adresy.

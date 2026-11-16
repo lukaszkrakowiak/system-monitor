@@ -23,9 +23,12 @@ func oneLine(s string) string {
 }
 
 // LoginMessage buduje powiadomienie o podejrzanym logowaniu SSH.
-func LoginMessage(host, user, ip, tty, service string, at time.Time, loc *time.Location, findings []Finding) notify.Message {
+// label to opcjonalna etykieta adresu IP nadana przez użytkownika (pusta = brak).
+func LoginMessage(host, user, ip, label, tty, service string, at time.Time, loc *time.Location, findings []Finding) notify.Message {
 	if ip == "" {
 		ip = "(local)"
+	} else if label = oneLine(label); label != "" {
+		ip += " (" + label + ")"
 	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "Host:     %s\nTime:     %s\nUser:     %s\nFrom IP:  %s\nTTY:      %s\nService:  %s\n\nWhy you are notified:\n",

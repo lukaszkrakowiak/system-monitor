@@ -132,12 +132,12 @@ func serve(ctx context.Context, cfg config) error {
 	}
 	engine := &alerts.Engine{
 		Sessions: db.Sessions(), Health: db.Health(), Settings: db.AlertSettings(), State: db.AlertState(),
-		Outbox: db.Notifications(), Connectors: db.Connectors(), Secrets: box,
+		Outbox: db.Notifications(), Connectors: db.Connectors(), Secrets: box, Labels: db.IPLabels(),
 	}
 	go engine.Run(ctx)
 
 	handler := api.New(api.Config{
-		Health: db.Health(), Services: db.Services(), Sessions: db.Sessions(), Commands: db.Commands(), LoginFailures: db.LoginFailures(), Units: sysd,
+		Health: db.Health(), Services: db.Services(), Sessions: db.Sessions(), Commands: db.Commands(), LoginFailures: db.LoginFailures(), IPLabels: db.IPLabels(), Units: sysd,
 		Connectors: db.Connectors(), AlertSettings: db.AlertSettings(), Notifications: db.Notifications(), Secrets: box,
 		TestConnector: engine.SendTest,
 		Token:         cfg.Token, BasicUser: cfg.BasicUser, BasicPass: cfg.BasicPass,

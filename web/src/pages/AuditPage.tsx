@@ -9,6 +9,7 @@ import {Text} from '@astryxdesign/core/Text';
 import {TextInput} from '@astryxdesign/core/TextInput';
 import {VStack} from '@astryxdesign/core/VStack';
 import {ErrorView} from '../components/ErrorView';
+import {IpCell, useIpLabels, type IpLabels} from '../components/IpCell';
 import {getCommands, getLoginFailures, getSessions} from '../lib/api';
 import {formatTime} from '../lib/format';
 import {usePolling} from '../lib/usePolling';
@@ -98,7 +99,7 @@ function CommandsTab() {
   );
 }
 
-function SessionsTab() {
+function SessionsTab({labels}: {labels: IpLabels}) {
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [offset, setOffset] = useState(0);
   const fetcher = useCallback(() => getSessions({user: filters.user, limit: PAGE_SIZE, offset}), [filters, offset]);
@@ -121,7 +122,7 @@ function SessionsTab() {
               density="compact"
               columns={[
                 {key: 'username', header: 'User', renderCell: (s) => s.username},
-                {key: 'remote_ip', header: 'Remote IP', renderCell: (s) => s.remote_ip || '—'},
+                {key: 'remote_ip', header: 'Remote IP', renderCell: (s) => <IpCell ip={s.remote_ip} labels={labels} />},
                 {key: 'tty', header: 'TTY', renderCell: (s) => s.tty || '—'},
                 {key: 'pam_service', header: 'Service', renderCell: (s) => s.pam_service},
                 {key: 'login_at', header: 'Login', renderCell: (s) => formatTime(s.login_at)},
@@ -136,7 +137,7 @@ function SessionsTab() {
   );
 }
 
-function FailuresTab() {
+function FailuresTab({labels}: {labels: IpLabels}) {
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [offset, setOffset] = useState(0);
   const fetcher = useCallback(
@@ -163,7 +164,7 @@ function FailuresTab() {
               columns={[
                 {key: 'attempted_at', header: 'Time', renderCell: (f) => formatTime(f.attempted_at)},
                 {key: 'username', header: 'Tried user', renderCell: (f) => f.username},
-                {key: 'remote_ip', header: 'Remote IP', renderCell: (f) => f.remote_ip || '—'},
+                {key: 'remote_ip', header: 'Remote IP', renderCell: (f) => <IpCell ip={f.remote_ip} labels={labels} />},
                 {key: 'service', header: 'Service', renderCell: (f) => f.service || '—'},
               ]}
             />
@@ -177,6 +178,7 @@ function FailuresTab() {
 
 export function AuditPage() {
   const [tab, setTab] = useState<AuditTab>('commands');
+  const labels = useIpLabels();
   return (
     <VStack gap={3}>
       <TabList role="tablist" value={tab} onChange={(v) => setTab(v as AuditTab)}>
@@ -184,7 +186,7 @@ export function AuditPage() {
         <Tab value="sessions" label="SSH sessions" />
         <Tab value="failures" label="Failed logins" />
       </TabList>
-      {tab === 'commands' ? <CommandsTab /> : tab === 'sessions' ? <SessionsTab /> : <FailuresTab />}
+      {tab === 'commands' ? <CommandsTab /> : tab === 'sessions' ? <SessionsTab labels={labels} /> : <FailuresTab labels={labels} />}
     </VStack>
   );
 }

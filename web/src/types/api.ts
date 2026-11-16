@@ -215,6 +215,19 @@ export type NotificationsResponse = {
   offset: number;
 };
 
+export type IPLabelInfo = {
+  ip: string;
+  label: string;
+};
+
+export type IPLabelsResponse = {
+  labels: IPLabelInfo[];
+};
+
+export type IPLabelRequest = {
+  label: string;
+};
+
 export type ErrorResponse = {
   error: string;
 };

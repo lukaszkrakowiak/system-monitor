@@ -8,6 +8,7 @@ React frontend embedded; no Node.js, web server or external database is needed i
 - **Health** (`/health`): selected systemd services, supervisor process groups, and Elasticsearch / Redis / Kibana status.
 - **Services** (`/services`): pick which systemd units appear on the health page.
 - **Audit** (`/audit`): shell command history (auditd), SSH sessions (PAM), and failed logins (auditd).
+  Any remote IP can be given your own label ("office", "my laptop") that is shown next to it and added to login alert emails.
 - **Settings** (`/settings`): alert rules and notification connectors (email/SMTP today; the connector registry is built for Slack, Teams, etc.).
   Rules: SSH logins in chosen time windows (e.g. Mon–Fri 17:00–06:00, or the whole weekend), SSH logins from IPs outside an allow-list, and
   any monitored service leaving the OK state (with optional recovery notices). Delivery is queued with retries; the History tab shows every notification.

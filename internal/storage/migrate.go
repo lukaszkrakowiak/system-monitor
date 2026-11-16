@@ -109,6 +109,14 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE INDEX IF NOT EXISTS idx_notifications_due ON notifications(status, next_attempt_at);
 CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at DESC);
 `},
+	// Etykiety adresów IP nadawane przez użytkownika (np. "biuro", "mój komputer").
+	{5, `
+CREATE TABLE IF NOT EXISTS ip_labels (
+    ip         TEXT PRIMARY KEY,
+    label      TEXT NOT NULL,
+    updated_at DATETIME NOT NULL
+);
+`},
 }
 
 func migrate(db *sql.DB) error {

@@ -157,6 +157,29 @@ func TestLoginAlertsFireOncePerSessionAndSkipHistory(t *testing.T) {
 	}
 }
 
+func TestLoginAlertShowsIPLabel(t *testing.T) {
+	e := newEnv(t)
+	e.eng.Labels = e.db.IPLabels()
+	e.save(func(s *Settings) { s.LoginIP = LoginIPRule{Enabled: true, Allowed: []string{"192.0.2.0/24"}} })
+	e.tick() // inicjalizacja kursora
+	if err := e.db.IPLabels().Set("203.0.113.9", "office VPN", e.now); err != nil {
+		t.Fatal(err)
+	}
+	e.session("mallory", "203.0.113.9")
+	e.session("eve", "::ffff:198.51.100.5") // bez etykiety
+	e.now = e.now.Add(time.Second)
+	e.tick()
+	if len(e.rec.sent) != 2 {
+		t.Fatalf("want 2 alerts, got %+v", e.rec.sent)
+	}
+	if !strings.Contains(e.rec.sent[0].Body, "From IP:  203.0.113.9 (office VPN)") {
+		t.Fatalf("label missing: %s", e.rec.sent[0].Body)
+	}
+	if !strings.Contains(e.rec.sent[1].Body, "From IP:  ::ffff:198.51.100.5\n") {
+		t.Fatalf("unlabeled IP must have no label: %s", e.rec.sent[1].Body)
+	}
+}
+
 func TestLoginTimeRuleAlerts(t *testing.T) {
 	e := newEnv(t)
 	e.save(func(s *Settings) {

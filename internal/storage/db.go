@@ -91,6 +91,9 @@ func (d *DB) Commands() *CommandRepo { return &CommandRepo{d} }
 // LoginFailures zwraca repozytorium login_failures.
 func (d *DB) LoginFailures() *LoginFailureRepo { return &LoginFailureRepo{d} }
 
+// IPLabels zwraca repozytorium ip_labels.
+func (d *DB) IPLabels() *IPLabelRepo { return &IPLabelRepo{d} }
+
 // Connectors zwraca repozytorium notification_connectors.
 func (d *DB) Connectors() *ConnectorRepo { return &ConnectorRepo{d} }
 

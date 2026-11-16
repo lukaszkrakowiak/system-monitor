@@ -93,6 +93,9 @@ func TestTypeScriptContractMatchesGoDTOs(t *testing.T) {
 		{reflect.TypeOf(TestConnectorResponse{}), "TestConnectorResponse"},
 		{reflect.TypeOf(NotificationDTO{}), "NotificationInfo"},
 		{reflect.TypeOf(NotificationsResponse{}), "NotificationsResponse"},
+		{reflect.TypeOf(IPLabelDTO{}), "IPLabelInfo"},
+		{reflect.TypeOf(IPLabelsResponse{}), "IPLabelsResponse"},
+		{reflect.TypeOf(IPLabelRequest{}), "IPLabelRequest"},
 		{reflect.TypeOf(ErrorResponse{}), "ErrorResponse"},
 	}
 	covered := map[string]bool{}

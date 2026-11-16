@@ -40,6 +40,9 @@ type (
 	ConnectorSource interface {
 		Get(typ string) (*storage.Connector, error)
 	}
+	IPLabelSource interface {
+		List() ([]storage.IPLabel, error)
+	}
 )
 
 const (
@@ -65,6 +68,8 @@ type Engine struct {
 	Outbox     Outbox
 	Connectors ConnectorSource
 	Secrets    *secret.Box
+	// Labels jest opcjonalne: etykiety IP dopisywane do powiadomień o logowaniach.
+	Labels IPLabelSource
 
 	Host     string
 	Interval time.Duration
@@ -198,6 +203,29 @@ func (e *Engine) enqueue(set Settings, kind, dedupe string, m notify.Message) er
 	return nil
 }
 
+// ipLabel zwraca etykietę adresu IP z ustawień użytkownika ("" gdy brak lub błąd odczytu —
+// etykieta jest tylko ozdobnikiem i nie może blokować alertu).
+func (e *Engine) ipLabel(ip string) string {
+	if e.Labels == nil || ip == "" {
+		return ""
+	}
+	norm, ok := storage.NormalizeIP(ip)
+	if !ok {
+		return ""
+	}
+	labels, err := e.Labels.List()
+	if err != nil {
+		e.logf("alerts: ip labels: %v", err)
+		return ""
+	}
+	for _, l := range labels {
+		if l.IP == norm {
+			return l.Label
+		}
+	}
+	return ""
+}
+
 func (e *Engine) tickLogins(set Settings) error {
 	cur, ok, err := e.State.Get(cursorKey)
 	if err != nil {
@@ -225,7 +253,7 @@ func (e *Engine) tickLogins(set Settings) error {
 		for _, s := range sessions {
 			if set.LoginTime.Enabled || set.LoginIP.Enabled {
 				if f := set.LoginFindings(s.RemoteIP, s.LoginAt); len(f) > 0 {
-					m := LoginMessage(e.host(), s.Username, s.RemoteIP, s.TTY, s.PAMService, s.LoginAt, set.Location(), f)
+					m := LoginMessage(e.host(), s.Username, s.RemoteIP, e.ipLabel(s.RemoteIP), s.TTY, s.PAMService, s.LoginAt, set.Location(), f)
 					if err := e.enqueue(set, KindLogin, "login:"+strconv.FormatInt(s.ID, 10), m); err != nil {
 						return err // kursor nie przesunięty: ponowimy (outbox jest idempotentny)
 					}

@@ -55,7 +55,9 @@ type Config struct {
 	Commands CommandStore
 	// LoginFailures jest opcjonalne; gdy nil, endpoint zwraca pustą listę.
 	LoginFailures LoginFailureStore
-	Units         UnitLister
+	// IPLabels jest opcjonalne; gdy nil, endpointy etykiet IP zwracają 503.
+	IPLabels IPLabelStore
+	Units    UnitLister
 
 	// Alerty (opcjonalne; gdy nil, odpowiednie endpointy zwracają 503).
 	Connectors    ConnectorStore
@@ -113,6 +115,9 @@ func New(cfg Config) http.Handler {
 	route("GET", "/api/audit/sessions", s.auth(s.handleSessions))
 	route("GET", "/api/audit/commands", s.auth(s.handleCommands))
 	route("GET", "/api/audit/login-failures", s.auth(s.handleLoginFailures))
+	route("GET", "/api/ip-labels", s.auth(s.handleListIPLabels))
+	route("PUT", "/api/ip-labels/{ip}", s.auth(s.handlePutIPLabel))
+	route("DELETE", "/api/ip-labels/{ip}", s.auth(s.handleDeleteIPLabel))
 	route("GET", "/api/settings/alerts", s.auth(s.handleGetAlertSettings))
 	route("PUT", "/api/settings/alerts", s.auth(s.handlePutAlertSettings))
 	route("GET", "/api/settings/connectors", s.auth(s.handleListConnectors))
